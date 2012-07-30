@@ -1,5 +1,17 @@
 *.class
 *.log
+*~
+
+logs
+project/project
+project/target
+target
+tmp
+.history
+dist
+
+.*
+!.gitignore
 
 # sbt specific
 dist/*
