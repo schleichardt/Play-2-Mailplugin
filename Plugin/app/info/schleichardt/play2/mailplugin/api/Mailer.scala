@@ -7,7 +7,7 @@ import scala.collection.JavaConversions._
 object Mailer {
   def send(email: Email): String = MailPlugin.instance.send(email)
 
-  def history = MailPlugin.instance.mailArchive.clone()
+  def history: Seq[Email] = MailPlugin.instance.mailArchive.clone()
 
-  def historyAsJava: java.util.List[Email] = history
+  protected[mailplugin] def historyAsJava: java.util.List[Email] = history
 }
