@@ -1,3 +1,4 @@
+import org.apache.commons.mail.SimpleEmail
 import org.specs2.mutable._
 import info.schleichardt.play2.mailplugin._
 
@@ -14,6 +15,20 @@ class MailPluginSpec extends Specification {
       val app: FakeApplication = FakeApplication()
       running(app) {
         app.plugin(classOf[MailPlugin]).get.enabled === true
+      }
+    }
+
+    "archive up to 5 mails" in {
+      running(FakeApplication()) {
+        for (index <- 1 to 10) {
+          val email: SimpleEmail = new SimpleEmail()
+          email.setSubject("subject " + index)
+          Mailer.send(email)
+        }
+        val history = Mailer.history()
+        history.size === 5
+        history.get(0).getSubject === "subject 6"
+        history.get(4).getSubject === "subject 10"
       }
     }
 
