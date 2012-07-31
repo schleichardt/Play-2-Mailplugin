@@ -21,11 +21,18 @@ class MailPlugin(app: Application) extends Plugin {
   }
 
   protected[mailplugin] def send(email: Email): String = {
+    val result =
+      if (useMockMail) {
+        ""
+      } else {
+        configuration.setup(email)
+        email.send()
+      }
     mailArchive = mailArchive :+ email
     if (mailArchive.length > 5) {
       mailArchive = mailArchive.drop(1)
     }
-    ""
+    result
   }
 }
 
@@ -41,4 +48,13 @@ object MailPlugin {
   def configuration = instance.configuration
 }
 
-case class MailConfiguration(host: String, port: Int, useSsl: Boolean, user: Option[String], password: Option[String])
+case class MailConfiguration(host: String, port: Int, useSsl: Boolean, user: Option[String], password: Option[String]) {
+  def setup(email: Email): Email = {
+    email.setHostName(host);
+    email.setSmtpPort(port);
+    email.setSSL(useSsl);
+    email.setAuthentication(user.getOrElse(""), password.getOrElse(""));
+    email
+  }
+
+}

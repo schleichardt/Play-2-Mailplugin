@@ -1,3 +1,5 @@
+import com.icegreen.greenmail.util.{GreenMailUtil, ServerSetup, GreenMail}
+import javax.mail.internet.MimeMessage
 import org.apache.commons.mail.SimpleEmail
 import org.specs2.mutable._
 import info.schleichardt.play2.mailplugin._
@@ -43,6 +45,31 @@ class MailPluginSpec extends Specification {
         mailConf.useSsl === true
         mailConf.user.get === "michael"
         mailConf.password.get === "123456"
+      }
+    }
+
+    "be able to send real mails" in {
+      val testPort = com.icegreen.greenmail.util.ServerSetupTest.SMTP.getPort
+      val configMap: Map[String, String] = Map("smtp.mock" -> "false", "smtp.port" -> testPort.toString, "smtp.ssl" -> "false")
+      val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
+      running(app) {
+        var greenMail = new GreenMail(com.icegreen.greenmail.util.ServerSetupTest.SMTP)
+        try {
+          greenMail.start()
+          val email: SimpleEmail = new SimpleEmail
+          val subject = "the subject"
+          email.setSubject(subject)
+          email.setFrom("tester@localhost")
+          email.addTo("test-receiver@localhost")
+          Mailer.send(email)
+          val receivedMessages: Array[MimeMessage] = greenMail.getReceivedMessages
+          receivedMessages.size === 1
+          receivedMessages(0).getSubject === subject
+        } finally {
+          if (greenMail != null) {
+            greenMail.stop();
+          }
+        }
       }
     }
   }
