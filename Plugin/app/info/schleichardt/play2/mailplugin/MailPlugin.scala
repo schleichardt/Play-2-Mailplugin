@@ -1,12 +1,11 @@
 package info.schleichardt.play2.mailplugin
 
-import play.api.{Logger, Plugin, Application}
+import play.api.{Plugin, Application}
 import org.apache.commons.mail.Email
 import collection.mutable.DoubleLinkedList
-import scala.collection.JavaConversions._
 
 class MailPlugin(app: Application) extends Plugin {
-  private var mailArchive = new DoubleLinkedList[Email]()
+  protected[mailplugin] var mailArchive = new DoubleLinkedList[Email]()
   private lazy val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
   MailPlugin.instance = this
   private lazy val configuration = if (!useMockMail) {
@@ -32,7 +31,7 @@ class MailPlugin(app: Application) extends Plugin {
 
 object MailPlugin {
   lazy val MaxEmailArchiveSize: Int = 5
-  private var instance: MailPlugin = null
+  protected[mailplugin] var instance: MailPlugin = null
 
   def usesMockMail = instance match {
     case x: MailPlugin => x.useMockMail
@@ -40,12 +39,6 @@ object MailPlugin {
   }
 
   def configuration = instance.configuration
-
-  protected[mailplugin] def send(email: Email): String = instance.send(email)
-
-  protected[mailplugin] def history = instance.mailArchive.clone()
-
-  protected[mailplugin] def historyAsJava: java.util.List[Email] = history
 }
 
 case class MailConfiguration(host: String, port: Int, useSsl: Boolean, user: Option[String], password: Option[String])
