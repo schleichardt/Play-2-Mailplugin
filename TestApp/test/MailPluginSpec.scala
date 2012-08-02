@@ -7,8 +7,8 @@ import info.schleichardt.play2.mailplugin._
 import play.api.test._
 import play.api.test.Helpers._
 
-import demo.DemoEmailProvider.newfilledHtmlEmail
-import demo.DemoEmailProvider.newFilledSimpleMail
+import demo.DemoEmailProvider.newFilledHtmlEmail
+import demo.DemoEmailProvider.newFilledSimpleEmail
 import demo.DemoEmailProvider.newFilledSimpleMailWithSmtpSettings
 
 class MailPluginSpec extends Specification {
@@ -27,7 +27,7 @@ class MailPluginSpec extends Specification {
     "archive up to 5 mails" in {
       running(FakeApplication()) {
         for (index <- 1 to 10) {
-          val email: SimpleEmail = newFilledSimpleMail()
+          val email: SimpleEmail = newFilledSimpleEmail()
           email.setSubject("subject " + index)
           Mailer.send(email)
         }
@@ -60,7 +60,7 @@ class MailPluginSpec extends Specification {
         var greenMail = new GreenMail(com.icegreen.greenmail.util.ServerSetupTest.SMTP)
         try {
           greenMail.start()
-          val email: SimpleEmail = newFilledSimpleMail()
+          val email: SimpleEmail = newFilledSimpleEmail()
           val subject = "the subject"
           email.setSubject(subject)
           Mailer.send(email)

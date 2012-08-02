@@ -27,10 +27,8 @@ class MailPlugin(app: Application) extends Plugin {
   protected[mailplugin] def send(email: Email): String = {
     val result =
       if (useMockMail) {
-        email.setHostName("localhost")
-        email.buildMimeMessage()
         val mailContent: String = MailPlugin.getEmailDebugOutput(email)
-        Logger.debug(views.txt.emailDebug(email).toString() + mailContent)
+        Logger.debug(mailContent)
         ""
       } else {
         configuration.setup(email)
@@ -56,21 +54,20 @@ object MailPlugin {
   def configuration = instance.configuration
 
   private[mailplugin] def getEmailDebugOutput(email: Email): String = {
-    email match {
-      case mail: MultiPartEmail => {
-        mail.getMimeMessage.getContent match {
-          case mimeMulti: MimeMultipart => {
-            var text = ""
-            for(i <- 0 until mimeMulti.getCount){
-              text += getContent(mimeMulti.getBodyPart(i))
-            }
-            text
+    val headers: String = views.txt.emailDebug(email).toString()
+    val content: String = {
+      if(isEmpty(email.getHostName))
+        email.setHostName("localhost")
+      email.buildMimeMessage()
+      email match {
+        case mail: MultiPartEmail => mail.getMimeMessage.getContent match {
+            case mimeMulti: MimeMultipart => (for(i <- 0 until mimeMulti.getCount) yield getContent(mimeMulti.getBodyPart(i))).mkString
+            case x => x.toString
           }
-          case x => x.toString
-        }
+        case _ => email.getMimeMessage.getContent.toString
       }
-      case _ => email.getMimeMessage.getContent.toString
     }
+    headers + content
   }
 
   private[this] def getContent(message: Part): String = {

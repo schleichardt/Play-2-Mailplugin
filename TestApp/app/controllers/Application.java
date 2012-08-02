@@ -6,8 +6,8 @@ import play.mvc.*;
 
 import views.html.*;
 
-import static demo.DemoEmailProvider.newfilledHtmlEmail;
-import static demo.DemoEmailProvider.newFilledSimpleMail;
+import static demo.DemoEmailProvider.newFilledHtmlEmail;
+import static demo.DemoEmailProvider.newFilledSimpleEmail;
 
 public class Application extends Controller {
 
@@ -17,8 +17,8 @@ public class Application extends Controller {
 
     public static Result sendMail() {
         try {
-            Mailer.send(newFilledSimpleMail());
-            Mailer.send(newfilledHtmlEmail());
+            Mailer.send(newFilledSimpleEmail());
+            Mailer.send(newFilledHtmlEmail());
             flash("flash", "Mails had been send. Watch them on the console.");
         } catch (final EmailException e) {
             flash("flash", "Error, emails hadn't been send.");
