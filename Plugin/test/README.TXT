@@ -1,0 +1,1 @@
+The tests for the mail plugin are mainly in the TestApp.
