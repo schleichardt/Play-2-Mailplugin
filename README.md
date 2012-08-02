@@ -17,7 +17,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
       project/Build.scala
 
           val appDependencies = Seq(
-            "info.schleichardt" %% "play-2-mailplugin" % "0.4"
+            "info.schleichardt" %% "play-2-mailplugin" % "0.5"
           )
           val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
             resolvers += "schleichardts Github" at "http://schleichardt.github.com/jvmrepo/"
