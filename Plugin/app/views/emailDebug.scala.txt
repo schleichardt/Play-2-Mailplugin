@@ -1,0 +1,9 @@
+@(email: org.apache.commons.mail.Email)
+
+From: @email.getFromAddress
+To:   @email.getToAddresses.mkString(", ")
+CC:   @email.getCcAddresses.mkString(", ")
+BCC:  @email.getBccAddresses.mkString(", ")
+Date: @(new java.util.Date)
+Subj: @email.getSubject
+Cont:

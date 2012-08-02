@@ -1,8 +1,12 @@
 package info.schleichardt.play2.mailplugin
 
 import play.api.{Plugin, Application}
-import org.apache.commons.mail.Email
+import org.apache.commons.mail.{MultiPartEmail, Email}
 import collection.mutable.DoubleLinkedList
+import play.Logger
+import javax.mail.internet.MimeMultipart
+import javax.mail.{Part, Multipart}
+import org.apache.commons.lang.StringUtils.isEmpty
 
 class MailPlugin(app: Application) extends Plugin {
   protected[mailplugin] var mailArchive = new DoubleLinkedList[Email]()
@@ -23,6 +27,24 @@ class MailPlugin(app: Application) extends Plugin {
   protected[mailplugin] def send(email: Email): String = {
     val result =
       if (useMockMail) {
+        email.setHostName("localhost")
+        email.buildMimeMessage()
+        val mailContent: String = email match {
+          case mail: MultiPartEmail => {
+            mail.getMimeMessage.getContent match {
+              case mimeMulti: MimeMultipart => {
+                var text = ""
+                for(i <- 0 until mimeMulti.getCount){
+                  text += getContent(mimeMulti.getBodyPart(i))
+                }
+                text
+              }
+              case x => x.toString
+            }
+          }
+          case _ => email.getMimeMessage.getContent.toString
+        }
+        Logger.debug(views.txt.emailDebug(email).toString() + mailContent)
         ""
       } else {
         configuration.setup(email)
@@ -33,6 +55,34 @@ class MailPlugin(app: Application) extends Plugin {
       mailArchive = mailArchive.drop(1)
     }
     result
+  }
+
+  private[mailplugin] def getContent(message: Part): String = {
+    def formatAttachement(part: Part): String = {
+      val filename = if(isEmpty(message.getFileName)) "none" else message.getFileName
+      val description = if(isEmpty(message.getDescription)) "none" else message.getDescription
+      return """
+               |attachment:
+               |\t\tname: %s
+               |\t\tdisposition: %s
+               |\t\tdescription: %s
+             """.format(filename, message.getDisposition(), description).stripMargin
+    }
+
+    def formatPart(part: Part): String = {
+      if (!(Part.ATTACHMENT == part.getDisposition)) {
+        getContent(part)
+      } else {
+        formatAttachement(part)
+      }
+    }
+
+    message.getContent match {
+      case s: String => message.getContentType + ": " + message.getContent + " \n"
+      case part: Multipart => (for (i <- 0 until part.getCount) yield formatPart(part.getBodyPart(i))).mkString
+      case part: Part =>  formatPart(part)
+      case _ => ""
+    }
   }
 }
 
