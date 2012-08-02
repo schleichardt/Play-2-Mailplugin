@@ -3,7 +3,7 @@ import Keys._
 
 object MailerBuild extends Build {
 
-  lazy val moduleVersion =  "0.5-SNAPSHOT"
+  lazy val moduleVersion =  "0.5"
   lazy val moduleOrganization = "info.schleichardt"
   lazy val moduleName = "Play-2-Mailplugin"
   lazy val publishingFolder = Path.userHome.absolutePath+"/Projekte/schleichardt.github.com/jvmrepo"
