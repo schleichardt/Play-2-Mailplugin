@@ -24,12 +24,13 @@ class DebugEmailFormatSpec extends Specification {
     }
 
     "as HtmlEmails be debugged with Strings" in {
-      val email = newFilledHtmlEmail()
+      val email = newFilledHtmlEmailWithAttachement()
       val output = MailPluginTestEnhancement.emailToString(email)
       output must contain(SENDER_LOCALHOST)
       output must contain(RECIPIENT_LOCALHOST)
       output must contain(HTML_MAIL_MESSAGE_TEXT)
       output must contain(DEFAULT_HTML_MESSAGE)
+      output must contain(ATTACHEMENT_TXT_FILE_NAME)
     }
   }
 }

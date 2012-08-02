@@ -4,9 +4,14 @@ import play.api.{Plugin, Application}
 import org.apache.commons.mail.{MultiPartEmail, Email}
 import collection.mutable.DoubleLinkedList
 import play.Logger
-import javax.mail.internet.MimeMultipart
-import javax.mail.{Part, Multipart}
+import javax.mail.internet.{PreencodedMimeBodyPart, MimeMessage, MimeMultipart, MimeBodyPart}
+import javax.mail.{Message, BodyPart, Part, Multipart}
+
 import org.apache.commons.lang.StringUtils.isEmpty
+import java.io.ByteArrayInputStream
+
+import scala.collection.JavaConversions._
+
 
 class MailPlugin(app: Application) extends Plugin {
   protected[mailplugin] var mailArchive = new DoubleLinkedList[Email]()
@@ -28,7 +33,7 @@ class MailPlugin(app: Application) extends Plugin {
     val result =
       if (useMockMail) {
         val mailContent: String = MailPlugin.getEmailDebugOutput(email)
-        Logger.debug(mailContent)
+        Logger.debug("mock email send:\n" + mailContent)
         ""
       } else {
         configuration.setup(email)
@@ -53,48 +58,54 @@ object MailPlugin {
 
   def configuration = instance.configuration
 
+  private[mailplugin] def getimportantEmailHeadDebugOutput(email: Email): String = {
+    val buffer = new StringBuffer
+    buffer.append("From: " + email.getFromAddress+ "\n")
+    buffer.append("To:   " +email.getToAddresses.mkString(", ")+ "\n")
+    if (email.getCcAddresses.size() > 0)
+      buffer.append("CC:   "+email.getCcAddresses.mkString(", ")+ "\n")
+    if (email.getBccAddresses.size() > 0)
+      buffer.append("BCC:  "+email.getBccAddresses.mkString(", ")+ "\n")
+    buffer.append("Date: "+new java.util.Date+ "\n")
+    buffer.append("Subj: "+email.getSubject+ "\n")
+    buffer.toString
+  }
+
   private[mailplugin] def getEmailDebugOutput(email: Email): String = {
-    val headers: String = views.txt.emailDebug(email).toString()
     val content: String = {
       if(isEmpty(email.getHostName))
         email.setHostName("localhost")
       email.buildMimeMessage()
       email match {
         case mail: MultiPartEmail => mail.getMimeMessage.getContent match {
-            case mimeMulti: MimeMultipart => (for(i <- 0 until mimeMulti.getCount) yield getContent(mimeMulti.getBodyPart(i))).mkString
+            case mimeMulti: MimeMultipart => (for(i <- 0 until mimeMulti.getCount) yield (getContent(mimeMulti.getBodyPart(i)))).mkString
             case x => x.toString
           }
         case _ => email.getMimeMessage.getContent.toString
       }
     }
-    headers + content
+    getimportantEmailHeadDebugOutput(email) + "cont:\n" + content
   }
 
-  private[this] def getContent(message: Part): String = {
-    def formatAttachement(part: Part): String = {
-      val filename = if(isEmpty(message.getFileName)) "none" else message.getFileName
-      val description = if(isEmpty(message.getDescription)) "none" else message.getDescription
-      return """
-               |attachment:
-               |\t\tname: %s
-               |\t\tdisposition: %s
-               |\t\tdescription: %s
-             """.format(filename, message.getDisposition(), description).stripMargin
-    }
+  private[this] def formatAttachement(part: Part): String = {
+    val filename = if(isEmpty(part.getFileName)) "none" else part.getFileName
+    val description = if(isEmpty(part.getDescription)) "none" else part.getDescription
+    return """attachment:
+             |  name:  %s
+             |  MIME:  %s
+             |  descr: %s
+             |  disp:  %s
+           """.format(filename, part.getDisposition(), description, part.getContentType).stripMargin
+  }
 
-    def formatPart(part: Part): String = {
-      if (!(Part.ATTACHMENT == part.getDisposition)) {
-        getContent(part)
-      } else {
-        formatAttachement(part)
-      }
-    }
-
-    message.getContent match {
-      case s: String => message.getContentType + ": " + message.getContent + " \n"
-      case part: Multipart => (for (i <- 0 until part.getCount) yield formatPart(part.getBodyPart(i))).mkString
-      case part: Part =>  formatPart(part)
-      case _ => ""
+def getContent(part: Part): String = {
+    part.getContent match {
+      case part: Multipart => (for (i <- 0 until part.getCount) yield getContent(part.getBodyPart(i))).mkString
+      case part: Part =>  getContent(part)
+      case s: String if !Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition) => part.getContentType + ": " + part.getContent + "\n"
+      case s: String => formatAttachement(part)
+      case b: ByteArrayInputStream => formatAttachement(part)
+      case x => part.getContentType + ": " + x
     }
   }
 }

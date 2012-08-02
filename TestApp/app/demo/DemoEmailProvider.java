@@ -1,9 +1,11 @@
 package demo;
 
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
-import org.apache.commons.mail.SimpleEmail;
-import org.apache.commons.mail.Email;
+import org.apache.commons.mail.*;
+
+import javax.mail.Part;
+import java.io.IOException;
+
+
 
 public class DemoEmailProvider {
     public static final String DEFAULT_TEXT_MESSAGE = "Dear recipient,\n\n\nthis is the mailtext.\n\nsincerely sender";
@@ -12,6 +14,7 @@ public class DemoEmailProvider {
     public static final String RECIPIENT_LOCALHOST = "recipient@localhost";
     public static final String SUBJECT = "the subject of the email";
     public static final String HTML_MAIL_MESSAGE_TEXT = "Hello";
+    public static final String ATTACHEMENT_TXT_FILE_NAME = "the-text-file.txt";
 
     public static SimpleEmail newFilledSimpleMailWithSmtpSettings() throws EmailException {
         final SimpleEmail email = newFilledSimpleEmail();
@@ -29,8 +32,20 @@ public class DemoEmailProvider {
     public static HtmlEmail newFilledHtmlEmail() throws EmailException {
         final HtmlEmail email = new HtmlEmail();
         setFromToSubject(email);
-        email.setMsg(HTML_MAIL_MESSAGE_TEXT);
+        email.setTextMsg(HTML_MAIL_MESSAGE_TEXT);
         email.setHtmlMsg(DEFAULT_HTML_MESSAGE);
+        return email;
+
+    }
+
+    public static HtmlEmail newFilledHtmlEmailWithAttachement() throws EmailException {
+        final HtmlEmail email = newFilledHtmlEmail();
+        try {
+            final ByteArrayDataSource dataSource = new ByteArrayDataSource(ATTACHEMENT_TXT_FILE_NAME.getBytes(), "text/plain");
+            email.attach(dataSource, ATTACHEMENT_TXT_FILE_NAME, "An example test file.", Part.ATTACHMENT);
+        } catch (final IOException e) {
+            throw new EmailException(e);
+        }
         return email;
 
     }
