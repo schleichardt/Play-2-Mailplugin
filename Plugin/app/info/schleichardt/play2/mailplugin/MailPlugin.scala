@@ -29,21 +29,7 @@ class MailPlugin(app: Application) extends Plugin {
       if (useMockMail) {
         email.setHostName("localhost")
         email.buildMimeMessage()
-        val mailContent: String = email match {
-          case mail: MultiPartEmail => {
-            mail.getMimeMessage.getContent match {
-              case mimeMulti: MimeMultipart => {
-                var text = ""
-                for(i <- 0 until mimeMulti.getCount){
-                  text += getContent(mimeMulti.getBodyPart(i))
-                }
-                text
-              }
-              case x => x.toString
-            }
-          }
-          case _ => email.getMimeMessage.getContent.toString
-        }
+        val mailContent: String = MailPlugin.getEmailDebugOutput(email)
         Logger.debug(views.txt.emailDebug(email).toString() + mailContent)
         ""
       } else {
@@ -56,8 +42,38 @@ class MailPlugin(app: Application) extends Plugin {
     }
     result
   }
+}
 
-  private[mailplugin] def getContent(message: Part): String = {
+object MailPlugin {
+  lazy val MaxEmailArchiveSize: Int = 5
+  protected[mailplugin] var instance: MailPlugin = null
+
+  def usesMockMail = instance match {
+    case x: MailPlugin => x.useMockMail
+    case _ => true
+  }
+
+  def configuration = instance.configuration
+
+  private[mailplugin] def getEmailDebugOutput(email: Email): String = {
+    email match {
+      case mail: MultiPartEmail => {
+        mail.getMimeMessage.getContent match {
+          case mimeMulti: MimeMultipart => {
+            var text = ""
+            for(i <- 0 until mimeMulti.getCount){
+              text += getContent(mimeMulti.getBodyPart(i))
+            }
+            text
+          }
+          case x => x.toString
+        }
+      }
+      case _ => email.getMimeMessage.getContent.toString
+    }
+  }
+
+  private[this] def getContent(message: Part): String = {
     def formatAttachement(part: Part): String = {
       val filename = if(isEmpty(message.getFileName)) "none" else message.getFileName
       val description = if(isEmpty(message.getDescription)) "none" else message.getDescription
@@ -84,18 +100,6 @@ class MailPlugin(app: Application) extends Plugin {
       case _ => ""
     }
   }
-}
-
-object MailPlugin {
-  lazy val MaxEmailArchiveSize: Int = 5
-  protected[mailplugin] var instance: MailPlugin = null
-
-  def usesMockMail = instance match {
-    case x: MailPlugin => x.useMockMail
-    case _ => true
-  }
-
-  def configuration = instance.configuration
 }
 
 case class MailConfiguration(host: String, port: Int, useSsl: Boolean, user: Option[String], password: Option[String]) {
