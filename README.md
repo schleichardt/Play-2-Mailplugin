@@ -20,6 +20,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
  * mock mailer (no mail server or open port needed)
  * see emails in console
  * get an email history
+* use it with Java or Scala
 
 ## Installation
 
