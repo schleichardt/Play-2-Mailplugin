@@ -24,6 +24,9 @@ class MailPluginSpec extends Specification {
       running(FakeApplication()) {
         for (index <- 1 to 10) {
           val email: SimpleEmail = new SimpleEmail()
+          email.setFrom("TestApp@localhost")
+          email.addTo("user@localhost")
+          email.setSubject("test subject")
           email.setSubject("subject " + index)
           Mailer.send(email)
         }
