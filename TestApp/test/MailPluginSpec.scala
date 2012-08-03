@@ -1,6 +1,6 @@
 import com.icegreen.greenmail.util.{GreenMailUtil, ServerSetup, GreenMail}
 import javax.mail.internet.MimeMessage
-import org.apache.commons.mail.SimpleEmail
+import org.apache.commons.mail.{EmailException, Email, SimpleEmail}
 import org.specs2.mutable._
 import info.schleichardt.play2.mailplugin._
 
@@ -10,6 +10,8 @@ import play.api.test.Helpers._
 import demo.DemoEmailProvider.newFilledHtmlEmail
 import demo.DemoEmailProvider.newFilledSimpleEmail
 import demo.DemoEmailProvider.newFilledSimpleMailWithSmtpSettings
+
+import scala.collection.JavaConversions._
 
 class MailPluginSpec extends Specification {
   "MailPlugin" should {
@@ -49,6 +51,40 @@ class MailPluginSpec extends Specification {
         mailConf.useSsl === true
         mailConf.user.get === "michael"
         mailConf.password.get === "123456"
+      }
+    }
+
+    "be able to add additional configuration" in {
+      val additionalRecipient = "additionalRecipient@localhost"
+
+      val interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor {
+        override def afterConfiguration(email: Email) {
+          email.addBcc(additionalRecipient)
+        }
+      }
+
+      running(FakeApplication()) {
+        val email = newFilledSimpleEmail()
+        email.getBccAddresses.exists(_.toString.contains(additionalRecipient)) === false
+
+        Mailer.setInterceptor(interceptor)
+        Mailer.send(email)
+
+        email.getBccAddresses.exists(_.toString.contains(additionalRecipient)) === true
+      }
+    }
+
+    "be able to cause a send error for TDD" in {
+      val interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor {
+        override def afterConfiguration(email: Email) {
+          throw new EmailException("thrown for testing if the app reacts correctly on a mail server error")
+        }
+      }
+
+      running(FakeApplication()) {
+        val email = newFilledSimpleEmail()
+        Mailer.setInterceptor(interceptor)
+        Mailer.send(email) must throwA[EmailException]
       }
     }
 

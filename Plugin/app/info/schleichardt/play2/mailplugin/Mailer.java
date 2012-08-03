@@ -7,6 +7,9 @@ import org.apache.commons.mail.EmailException;
 import java.util.List;
 
 public class Mailer {
+    private Mailer() {
+    }
+
     public static String send(final Email email) throws EmailException {
         return Mailer$.MODULE$.send(email);
     }
@@ -15,5 +18,7 @@ public class Mailer {
         return Mailer$.MODULE$.historyAsJava();
     }
 
-
+    public static void setInterceptor(final EmailSendInterceptor interceptor) {
+        Mailer$.MODULE$.setInterceptor(interceptor);
+    }
 }

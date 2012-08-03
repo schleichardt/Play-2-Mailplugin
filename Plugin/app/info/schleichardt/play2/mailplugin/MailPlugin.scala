@@ -17,6 +17,7 @@ class MailPlugin(app: Application) extends Plugin {
   protected[mailplugin] var mailArchive = new DoubleLinkedList[Email]()
   private lazy val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
   MailPlugin.instance = this
+  var interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor
   private lazy val configuration = if (!useMockMail) {
     //uses Typesafe syntax: Copyright 2012 Typesafe (http://www.typesafe.com), https://github.com/typesafehub/play-plugins/blob/master/mailer/src/main/scala/com/typesafe/plugin/MailerPlugin.scala
     val host = app.configuration.getString("smtp.host").getOrElse(throw new RuntimeException("smtp.host needs to be set in application.conf in order to use this plugin (or set smtp.mock to true)"))
@@ -29,20 +30,33 @@ class MailPlugin(app: Application) extends Plugin {
     null
   }
 
-  protected[mailplugin] def send(email: Email): String = {
-    val result =
-      if (useMockMail) {
-        val mailContent: String = MailPlugin.getEmailDebugOutput(email)
-        Logger.debug("mock email send:\n" + mailContent)
-        ""
-      } else {
-        configuration.setup(email)
-        email.send()
-      }
+  private[this] def archive(email: Email) {
     mailArchive = mailArchive :+ email
     if (mailArchive.length > 5) {
       mailArchive = mailArchive.drop(1)
     }
+  }
+
+  protected[mailplugin] def send(email: Email): String = {
+    require(email != null, "Email should not be null")
+
+    val senderAlgorithm: (Email) => String = (configuredEmail: Email) =>
+      if (useMockMail) {
+        val mailContent: String = MailPlugin.getEmailDebugOutput(configuredEmail)
+        Logger.debug("mock email send:\n" + mailContent)
+        ""
+      } else {
+        configuredEmail.send()
+      }
+
+    interceptor.preConfiguration(email)
+    if (!useMockMail) {
+      configuration.setup(email)
+    }
+    interceptor.afterConfiguration(email)
+    val result = senderAlgorithm(email)
+    archive(email)
+    interceptor.afterSend(email)
     result
   }
 }

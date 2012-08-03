@@ -1,7 +1,7 @@
 package info.schleichardt.play2.mailplugin.api
 
 import org.apache.commons.mail.Email
-import info.schleichardt.play2.mailplugin.MailPlugin
+import info.schleichardt.play2.mailplugin.{EmailSendInterceptor, MailPlugin}
 import scala.collection.JavaConversions._
 
 object Mailer {
@@ -10,4 +10,9 @@ object Mailer {
   def history: Seq[Email] = MailPlugin.instance.mailArchive.clone()
 
   protected[mailplugin] def historyAsJava: java.util.List[Email] = history
+
+  def setInterceptor(interceptor: EmailSendInterceptor) {
+    require(interceptor != null)
+    MailPlugin.instance.interceptor = interceptor
+  }
 }
