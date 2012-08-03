@@ -33,7 +33,7 @@ class MailPlugin(app: Application) extends Plugin {
   private[this] def archive(email: Email) {
     mailArchive = mailArchive :+ email
     if (mailArchive.length > 5) {
-      mailArchive = mailArchive.drop(1)
+      mailArchive = mailArchive.tail
     }
   }
 
