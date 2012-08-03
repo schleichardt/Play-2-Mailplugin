@@ -10,6 +10,18 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
+## Features
+
+* use the [Apache Commons Email library](http://commons.apache.org/email/) and its features 
+ * text emails
+ * html emails
+ * attachements
+* TDD features
+ * mock mailer (no mail server or open port needed)
+ * see emails in console
+ * get an email history
+* use it with Java or Scala
+
 ## Installation
 
 * add the depenency and the resolver
@@ -17,7 +29,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
       project/Build.scala
 
           val appDependencies = Seq(
-            "info.schleichardt" %% "play-2-mailplugin" % "0.4"
+            "info.schleichardt" %% "play-2-mailplugin" % "0.5"
           )
           val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
             resolvers += "schleichardts Github" at "http://schleichardt.github.com/jvmrepo/"
