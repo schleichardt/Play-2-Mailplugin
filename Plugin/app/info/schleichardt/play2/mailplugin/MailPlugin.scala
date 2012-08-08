@@ -17,6 +17,10 @@ import collection.mutable.SynchronizedQueue
 class MailPlugin(app: Application) extends Plugin {
   protected[mailplugin] var mailArchive = new SynchronizedQueue[Email]()
   private val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
+  val MaxEmailArchiveSize: Int = {
+    val defaultEmailArchiveSize = 5
+    app.configuration.getInt("smtp.archive.size").getOrElse(defaultEmailArchiveSize)
+  }
   MailPlugin.instance = this
   var interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor
   private val configuration = if (!useMockMail) {
@@ -33,7 +37,7 @@ class MailPlugin(app: Application) extends Plugin {
 
   private[this] def archive(email: Email) {
     mailArchive += email
-    if (mailArchive.length > 5) {
+    while (mailArchive.length > MaxEmailArchiveSize) {
       mailArchive.dequeue()
     }
   }
@@ -63,7 +67,6 @@ class MailPlugin(app: Application) extends Plugin {
 }
 
 object MailPlugin {
-  lazy val MaxEmailArchiveSize: Int = 5
   protected[mailplugin] var instance: MailPlugin = null
 
   def usesMockMail = instance match {

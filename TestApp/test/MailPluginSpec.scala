@@ -40,6 +40,22 @@ class MailPluginSpec extends Specification {
       }
     }
 
+    "be able to configure mail archive size" in {
+      val configMap: Map[String, String] = Map("smtp.archive.size" -> "20")
+      val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
+      running(app) {
+        for (index <- 1 to 30) {
+          val email: SimpleEmail = newFilledSimpleEmail()
+          email.setSubject("subject " + index)
+          Mailer.send(email)
+        }
+        val history = Mailer.history()
+        history.size === 20
+        history.get(0).getSubject === "subject 11"
+        history.get(4).getSubject === "subject 15"
+      }
+    }
+
     "grab the right configuration" in {
       val configMap: Map[String, String] = Map("smtp.mock" -> "false")
       val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
