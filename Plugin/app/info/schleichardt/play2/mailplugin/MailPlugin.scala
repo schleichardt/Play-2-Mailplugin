@@ -11,10 +11,11 @@ import org.apache.commons.lang.StringUtils.isEmpty
 import java.io.ByteArrayInputStream
 
 import scala.collection.JavaConversions._
+import collection.mutable.SynchronizedQueue
 
 
 class MailPlugin(app: Application) extends Plugin {
-  protected[mailplugin] var mailArchive = new DoubleLinkedList[Email]()
+  protected[mailplugin] var mailArchive = new SynchronizedQueue[Email]()
   private val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
   MailPlugin.instance = this
   var interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor
@@ -31,9 +32,9 @@ class MailPlugin(app: Application) extends Plugin {
   }
 
   private[this] def archive(email: Email) {
-    mailArchive = mailArchive :+ email
+    mailArchive += email
     if (mailArchive.length > 5) {
-      mailArchive = mailArchive.tail
+      mailArchive.dequeue()
     }
   }
 
