@@ -15,10 +15,10 @@ import scala.collection.JavaConversions._
 
 class MailPlugin(app: Application) extends Plugin {
   protected[mailplugin] var mailArchive = new DoubleLinkedList[Email]()
-  private lazy val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
+  private val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
   MailPlugin.instance = this
   var interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor
-  private lazy val configuration = if (!useMockMail) {
+  private val configuration = if (!useMockMail) {
     //uses Typesafe syntax: Copyright 2012 Typesafe (http://www.typesafe.com), https://github.com/typesafehub/play-plugins/blob/master/mailer/src/main/scala/com/typesafe/plugin/MailerPlugin.scala
     val host = app.configuration.getString("smtp.host").getOrElse(throw new RuntimeException("smtp.host needs to be set in application.conf in order to use this plugin (or set smtp.mock to true)"))
     val port = app.configuration.getInt("smtp.port").getOrElse(25)
