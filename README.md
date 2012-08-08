@@ -33,7 +33,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
       project/Build.scala
 
           val appDependencies = Seq(
-            "info.schleichardt" %% "play-2-mailplugin" % "0.6"
+            "info.schleichardt" %% "play-2-mailplugin" % "0.6.1"
           )
           val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
             resolvers += "schleichardts Github" at "http://schleichardt.github.com/jvmrepo/"
@@ -51,6 +51,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
  * smtp.ssl = false
  * smtp.user = smtp-username
  * smtp.password = smtp-password
+ * smtp.archive.size = 5 # optional, size of mail archive for tests, default: 5
 * call:
 
         for (index <- 1 to 10) {
