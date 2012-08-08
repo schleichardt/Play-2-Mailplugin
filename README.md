@@ -20,6 +20,10 @@ Unless required by applicable law or agreed to in writing, software distributed 
  * mock mailer (no mail server or open port needed)
  * see emails in console
  * get an email history
+ * add interceptors to test how the app behaves if the mail server is down
+* extendable with interceptors
+ * use interceptors if your configuration is more advanced
+ * use interceptors to log emails your way
 * use it with Java or Scala
 
 ## Installation
@@ -29,7 +33,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
       project/Build.scala
 
           val appDependencies = Seq(
-            "info.schleichardt" %% "play-2-mailplugin" % "0.5"
+            "info.schleichardt" %% "play-2-mailplugin" % "0.6"
           )
           val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
             resolvers += "schleichardts Github" at "http://schleichardt.github.com/jvmrepo/"
