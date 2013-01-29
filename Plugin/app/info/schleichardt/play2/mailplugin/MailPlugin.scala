@@ -7,7 +7,7 @@ import play.Logger
 import javax.mail.internet.{PreencodedMimeBodyPart, MimeMessage, MimeMultipart, MimeBodyPart}
 import javax.mail.{Message, BodyPart, Part, Multipart}
 
-import org.apache.commons.lang.StringUtils.isEmpty
+import org.apache.commons.lang3.StringUtils.isEmpty
 import java.io.ByteArrayInputStream
 
 import scala.collection.JavaConversions._
