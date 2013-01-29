@@ -6,7 +6,6 @@ object MailerBuild extends Build {
   lazy val moduleVersion =  "0.7-SNAPSHOT"
   lazy val moduleOrganization = "info.schleichardt"
   lazy val moduleName = "Play-2-Mailplugin"
-  lazy val publishingFolder = Path.userHome.absolutePath+"/Projekte/schleichardt.github.com/jvmrepo"
 
   val moduleDependencies = Seq(
        "org.apache.commons" % "commons-email" % "1.2"
