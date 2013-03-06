@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+import play.Project._
 
 object MailerBuild extends Build {
 
@@ -9,11 +10,12 @@ object MailerBuild extends Build {
 
   val moduleDependencies = Seq(
        "org.apache.commons" % "commons-email" % "1.3.1"
+    , "junit" % "junit-dep" % "4.11" % "test"
   )
 
   lazy val githubPath = "schleichardt/Play-2-Mailplugin"
 
-  lazy val main = PlayProject(moduleName, moduleVersion, moduleDependencies).settings(
+  lazy val main = play.Project(moduleName, moduleVersion, moduleDependencies).settings(
       organization := moduleOrganization,
       publishMavenStyle := true,
       publishArtifact in Test := false,

@@ -132,7 +132,7 @@ case class MailConfiguration(host: String, port: Int, useSsl: Boolean, user: Opt
   def setup(email: Email): Email = {
     email.setHostName(host);
     email.setSmtpPort(port);
-    email.setSSL(useSsl);
+    email.setSSLOnConnect(useSsl);
     email.setAuthentication(user.getOrElse(""), password.getOrElse(""));
     email
   }

@@ -2,9 +2,6 @@
 
 @main("Mailer Test App") {
 
-@if(flash.get("flash") != null) {
-    @flash.get("flash") <br>
-}
     <a href="@routes.Application.sendMail">Send a Mail and watch it in the console.</a>
     
 }

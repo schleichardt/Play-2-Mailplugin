@@ -19,12 +19,10 @@ public class Application extends Controller {
         try {
             Mailer.send(newFilledSimpleEmail());
             Mailer.send(newFilledHtmlEmail());
-            flash("flash", "Mails had been send. Watch them on the console.");
         } catch (final EmailException e) {
-            flash("flash", "Error, emails hadn't been send.");
             e.printStackTrace();
         }
-        return ok(index.render());
+        return redirect(routes.Application.index());
     }
 
 }
