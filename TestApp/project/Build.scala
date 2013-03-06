@@ -9,7 +9,7 @@ object ApplicationBuild extends Build {
 
     val appDependencies = Seq(
       "info.schleichardt" %% "play-2-mailplugin" % "0.8-SNAPSHOT",
-      "com.icegreen" % "greenmail" % "1.3"
+      "com.icegreen" % "greenmail" % "1.3" % "test"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
