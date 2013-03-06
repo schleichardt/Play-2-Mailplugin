@@ -10,4 +10,4 @@ addSbtPlugin("play" % "sbt-plugin" % "2.1.0")
 resolvers += Resolver.url("sbt-plugin-releases", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns)
 
 //uncomment this temporarily to publish to maven central
-//addSbtPlugin("com.jsuereth" % "xsbt-gpg-plugin" % "0.6.1")
+//addSbtPlugin("com.jsuereth" % "xsbt-gpg-plugin" % "0.6")
