@@ -8,7 +8,7 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
-      "info.schleichardt" %% "play-2-mailplugin" % "0.8"
+      "info.schleichardt" %% "play-2-mailplugin" % "0.9-SNAPSHOT"
       , "com.icegreen" % "greenmail" % "1.3" % "test"
       , "junit" % "junit-dep" % "4.11" % "test"
     )
