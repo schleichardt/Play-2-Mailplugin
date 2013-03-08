@@ -17,6 +17,7 @@ object MailerBuild extends Build {
 
   lazy val main = play.Project(moduleName, moduleVersion, moduleDependencies).settings(
       organization := moduleOrganization,
+      javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),//for compatibility with Debian Squeeze
       publishMavenStyle := true,
       publishArtifact in Test := false,
       publishTo <<= version { (v: String) =>
