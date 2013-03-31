@@ -56,12 +56,12 @@ class MailPluginSpec extends Specification {
       }
     }
 
-    "grab the right configuration" in {
+    "grab the right configuration with standard profile" in {
       val configMap: Map[String, String] = Map("smtp.mock" -> "false")
       val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
       running(app) {
         app.configuration.getBoolean("smtp.mock").get === false
-        val mailConf = MailPlugin.configuration
+        val mailConf = MailPlugin.configuration()
         mailConf.host === "localhost"
         mailConf.port === 26
         mailConf.useSsl === true
@@ -70,11 +70,25 @@ class MailPluginSpec extends Specification {
       }
     }
 
+    "grab the right configuration with extra profile" in {
+      val configMap: Map[String, String] = Map("smtp.mock" -> "false")
+      val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
+      running(app) {
+        app.configuration.getBoolean("smtp.mock").get === false
+        val mailConf = MailPlugin.configuration("demoprofile")
+        mailConf.host === "localhost"
+        mailConf.port === 26
+        mailConf.useSsl === true
+        mailConf.user.get === "demoprofileuser"
+        mailConf.password.get === "123456"
+      }
+    }
+
     "be able to add additional configuration" in {
       val additionalRecipient = "additionalRecipient@localhost"
 
       val interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor {
-        override def afterConfiguration(email: Email) {
+        override def afterConfiguration(email: Email, profile: String) {
           email.addBcc(additionalRecipient)
         }
       }
@@ -92,7 +106,7 @@ class MailPluginSpec extends Specification {
 
     "be able to cause a send error for TDD" in {
       val interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor {
-        override def afterConfiguration(email: Email) {
+        override def afterConfiguration(email: Email, profile: String) {
           throw new EmailException("thrown for testing if the app reacts correctly on a mail server error")
         }
       }
@@ -104,10 +118,16 @@ class MailPluginSpec extends Specification {
       }
     }
 
+    def smtpTestPort() = com.icegreen.greenmail.util.ServerSetupTest.SMTP.getPort
+    def smtpConfigForGreenMail(profile: String = "") = {
+      val usesProfile = profile != null && !profile.trim.isEmpty
+      val portKey = if(usesProfile) "smtp.profiles." + profile + ".port" else "smtp.port"
+      val sslKey = if(usesProfile) "smtp.profiles." + profile + ".ssl" else "smtp.ssl"
+      Map("smtp.mock" -> "false", portKey -> smtpTestPort().toString, sslKey -> "false")
+    }
+
     "be able to send real mails" in {
-      val testPort = com.icegreen.greenmail.util.ServerSetupTest.SMTP.getPort
-      val configMap: Map[String, String] = Map("smtp.mock" -> "false", "smtp.port" -> testPort.toString, "smtp.ssl" -> "false")
-      val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
+      val app: FakeApplication = FakeApplication(additionalConfiguration = smtpConfigForGreenMail())
       running(app) {
         var greenMail = new GreenMail(com.icegreen.greenmail.util.ServerSetupTest.SMTP)
         try {
@@ -121,7 +141,28 @@ class MailPluginSpec extends Specification {
           receivedMessages(0).getSubject === subject
         } finally {
           if (greenMail != null) {
-            greenMail.stop();
+            greenMail.stop()
+          }
+        }
+      }
+    }
+
+    "be able to send real mails with alternate profile" in {
+      val app: FakeApplication = FakeApplication(additionalConfiguration = smtpConfigForGreenMail("demoprofile"))
+      running(app) {
+        var greenMail = new GreenMail(com.icegreen.greenmail.util.ServerSetupTest.SMTP)
+        try {
+          greenMail.start()
+          val email: SimpleEmail = newFilledSimpleEmail()
+          val subject = "the subject alternate profile"
+          email.setSubject(subject)
+          Mailer.send(email, "demoprofile")
+          val receivedMessages: Array[MimeMessage] = greenMail.getReceivedMessages
+          receivedMessages.size === 1
+          receivedMessages(0).getSubject === subject
+        } finally {
+          if (greenMail != null) {
+            greenMail.stop()
           }
         }
       }
