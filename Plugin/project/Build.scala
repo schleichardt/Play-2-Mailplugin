@@ -17,16 +17,11 @@ object MailerBuild extends Build {
 
   lazy val main = play.Project(moduleName, moduleVersion, moduleDependencies).settings(
       organization := moduleOrganization,
+      playPlugin := true,
       javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),//for compatibility with Debian Squeeze
       publishMavenStyle := true,
       publishArtifact in Test := false,
-      publishTo <<= version { (v: String) =>
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT"))
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        else
-          Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-      },
+      publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/Projekte/schleichardt.github.com/jvmrepo"))(Resolver.mavenStylePatterns)),
       pomIncludeRepository := { _ => false },
       pomExtra := (
         <url>https://github.com/{githubPath}</url>
