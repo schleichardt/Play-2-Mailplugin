@@ -2,12 +2,14 @@ package info.schleichardt.play2.mailplugin.interceptors
 
 import org.apache.commons.mail.Email
 import collection.mutable.SynchronizedQueue
+import play.api.Application
 
-private[mailplugin] object ArchiveEmailInterceptor extends DefaultEmailInterceptor {
+private[mailplugin] class ArchiveEmailInterceptor(app: Application) extends DefaultEmailInterceptor {
   val mailArchive = new SynchronizedQueue[Email]()
 
-  override def onSuccess(args: InterceptorArgs) {
+  override def onSuccess(args: SuccessInterceptorArgs) = {
     archive(args.email)
+    args
   }
 
   private lazy val MaxEmailArchiveSize: Int = {

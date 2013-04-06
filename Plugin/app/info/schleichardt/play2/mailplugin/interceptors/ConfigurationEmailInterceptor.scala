@@ -1,6 +1,7 @@
 package info.schleichardt.play2.mailplugin.interceptors
 
 import org.apache.commons.mail.Email
+import play.api.Application
 
 private[mailplugin]
 case class MailConfiguration(host: String, port: Int, useSsl: Boolean, user: Option[String], password: Option[String]) {
@@ -14,8 +15,14 @@ case class MailConfiguration(host: String, port: Int, useSsl: Boolean, user: Opt
 }
 
 private[mailplugin]
-object ConfigurationEmailInterceptor extends EmailInterceptor {
-  def configuration(profile: String = "") = if (!useMockMail) {
+class ConfigurationEmailInterceptor(app: Application) extends DefaultEmailInterceptor {
+
+  override def afterConfiguration(args: InterceptorArgs) = {
+    configuration(args.profile).setup(args.email)
+    args
+  }
+
+  def configuration(profile: String = "") = {
     val usesProfile: Boolean = profile != null && !profile.trim.isEmpty
     val prefix = if (usesProfile) "smtp.profiles." + profile + "." else "smtp."
 
@@ -26,7 +33,5 @@ object ConfigurationEmailInterceptor extends EmailInterceptor {
     val user = app.configuration.getString(prefix + "user")
     val password = app.configuration.getString(prefix + "password")
     MailConfiguration(host, port, useSsl, user, password)
-  } else {
-    null
   }
 }

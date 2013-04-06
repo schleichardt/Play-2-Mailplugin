@@ -6,11 +6,14 @@ import javax.mail.{Multipart, Part}
 import org.apache.commons.lang3.StringUtils._
 import org.apache.commons.mail.{MultiPartEmail, Email}
 import play.Logger
+import collection.JavaConversions._
+
 
 private[mailplugin] object LogEmailInterceptor extends DefaultEmailInterceptor {
 
-  override def onSuccess(args: InterceptorArgs) {
-    Logger.debug("mock email send:\n" + getEmailDebugOutput(configuredEmail))
+  override def onSuccess(args: SuccessInterceptorArgs) = {
+    Logger.debug("mock email send:\n" + getEmailDebugOutput(args.email))
+    args
   }
 
   private def getImportantEmailHeadDebugOutput(email: Email): String = {
