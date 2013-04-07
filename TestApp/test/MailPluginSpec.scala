@@ -1,4 +1,7 @@
+package info.schleichardt.play2.mailplugin
+
 import com.icegreen.greenmail.util.{GreenMailUtil, ServerSetup, GreenMail}
+import interceptors.{InterceptorArgs, DefaultEmailInterceptor, EmailInterceptor, ConfigurationEmailInterceptor}
 import javax.mail.internet.MimeMessage
 import org.apache.commons.mail.{EmailException, Email, SimpleEmail}
 import org.specs2.mutable._
@@ -15,11 +18,7 @@ import scala.collection.JavaConversions._
 
 class MailPluginSpec extends Specification {
   "MailPlugin" should {
-    "be in a mock version" in {
-      MailPlugin.usesMockMail === true
-    }
-
-    "be activated in this app" in {
+    "be activated explicitly in this app" in {
       val app: FakeApplication = FakeApplication()
       running(app) {
         app.plugin(classOf[MailPlugin]).get.enabled === true
@@ -61,7 +60,8 @@ class MailPluginSpec extends Specification {
       val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
       running(app) {
         app.configuration.getBoolean("smtp.mock").get === false
-        val mailConf = MailPlugin.configuration()
+        val confInterceptor = new ConfigurationEmailInterceptor(play.api.Play.current)
+        val mailConf = confInterceptor.configuration()
         mailConf.host === "localhost"
         mailConf.port === 26
         mailConf.useSsl === true
@@ -75,7 +75,8 @@ class MailPluginSpec extends Specification {
       val app: FakeApplication = FakeApplication(additionalConfiguration = configMap)
       running(app) {
         app.configuration.getBoolean("smtp.mock").get === false
-        val mailConf = MailPlugin.configuration("demoprofile")
+        val confInterceptor = new ConfigurationEmailInterceptor(play.api.Play.current)
+        val mailConf = confInterceptor.configuration("demoprofile")
         mailConf.host === "localhost"
         mailConf.port === 26
         mailConf.useSsl === true
@@ -86,34 +87,32 @@ class MailPluginSpec extends Specification {
 
     "be able to add additional configuration" in {
       val additionalRecipient = "additionalRecipient@localhost"
-
-      val interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor {
-        override def afterConfiguration(email: Email, profile: String) {
-          email.addBcc(additionalRecipient)
+      val interceptor = new DefaultEmailInterceptor {
+        override def afterConfiguration(args: InterceptorArgs) = {
+          args.email.addBcc(additionalRecipient)
+          args
         }
       }
 
       running(FakeApplication()) {
         val email = newFilledSimpleEmail()
         email.getBccAddresses.exists(_.toString.contains(additionalRecipient)) === false
-
-        Mailer.setInterceptor(interceptor)
+        Mailer.addInterceptor(interceptor)
         Mailer.send(email)
-
         email.getBccAddresses.exists(_.toString.contains(additionalRecipient)) === true
       }
     }
 
     "be able to cause a send error for TDD" in {
-      val interceptor: EmailSendInterceptor = new DefaultEmailSendInterceptor {
-        override def afterConfiguration(email: Email, profile: String) {
+      val interceptor = new DefaultEmailInterceptor {
+        override def afterConfiguration(args: InterceptorArgs) = {
           throw new EmailException("thrown for testing if the app reacts correctly on a mail server error")
         }
       }
 
       running(FakeApplication()) {
         val email = newFilledSimpleEmail()
-        Mailer.setInterceptor(interceptor)
+        Mailer.addInterceptor(interceptor)
         Mailer.send(email) must throwA[EmailException]
       }
     }

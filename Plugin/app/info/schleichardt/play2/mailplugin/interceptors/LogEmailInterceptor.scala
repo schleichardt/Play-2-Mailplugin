@@ -29,7 +29,7 @@ private[mailplugin] object LogEmailInterceptor extends DefaultEmailInterceptor {
     buffer.toString
   }
 
-  private def getEmailDebugOutput(email: Email): String = {
+  private[mailplugin] def getEmailDebugOutput(email: Email): String = {
     val content: String = {
       if(isEmpty(email.getHostName))
         email.setHostName("localhost")

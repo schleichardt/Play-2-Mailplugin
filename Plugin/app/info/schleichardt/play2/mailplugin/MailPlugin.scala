@@ -6,14 +6,17 @@ import play.api.{Plugin, Application}
 import org.apache.commons.mail.Email
 
 class MailPlugin(app: Application) extends Plugin {
-  private val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
-  if (useMockMail) {
-    addInterceptor(LogEmailInterceptor)
-  } else {
-    addInterceptor(new ConfigurationEmailInterceptor(app))
+  private[mailplugin] lazy val useMockMail = app.configuration.getBoolean("smtp.mock").getOrElse(true)
+  private lazy val archiveInterceptor = new ArchiveEmailInterceptor(app)
+
+  override def onStart() {
+    if (useMockMail) {
+      addInterceptor(LogEmailInterceptor)
+    } else {
+      addInterceptor(new ConfigurationEmailInterceptor(app))
+    }
+    addInterceptor(archiveInterceptor)
   }
-  private val archiveInterceptor = new ArchiveEmailInterceptor(app)
-  addInterceptor(archiveInterceptor)
 
   private[mailplugin]
   def history(): Seq[Email] = archiveInterceptor.mailArchive.clone()
