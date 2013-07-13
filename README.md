@@ -28,17 +28,13 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 ## Installation
 
-* add the depenency and the resolver
+* add the depenency (hosted on maven central)
 
       project/Build.scala
 
           val appDependencies = Seq(
-            "info.schleichardt" %% "play-2-mailplugin" % "0.6.1"
+            "info.schleichardt" %% "play-2-mailplugin" % "0.9.1"
           )
-          val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
-            resolvers += "schleichardts Github" at "http://schleichardt.github.com/jvmrepo/"
-          )
-
 
 * edit or add file conf/play.plugins
  * add this line: 15000:info.schleichardt.play2.mailplugin.MailPlugin
