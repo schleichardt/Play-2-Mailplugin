@@ -100,6 +100,7 @@ object MailPlugin {
       if(isEmpty(email.getHostName))
         email.setHostName("localhost")
       email.buildMimeMessage()
+      email.getMimeMessage().saveChanges()
       email match {
         case mail: MultiPartEmail => mail.getMimeMessage.getContent match {
             case mimeMulti: MimeMultipart => (for(i <- 0 until mimeMulti.getCount) yield (getContent(mimeMulti.getBodyPart(i)))).mkString
