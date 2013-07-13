@@ -4,7 +4,7 @@ import play.Project._
 
 object MailerBuild extends Build {
 
-  lazy val moduleVersion =  "1.0-SNAPSHOT"
+  lazy val moduleVersion =  "0.9.1"
   lazy val moduleOrganization = "info.schleichardt"
   lazy val moduleName = "Play-2-Mailplugin"
 
